@@ -6,6 +6,7 @@ var fromRedis = false
 export default struct => {
   struct.set({
     redis: {
+      type: 'struct',
       props: {
         bucket: true,
         url (struct, url) {
@@ -113,7 +114,7 @@ export default struct => {
           .then(loaded => {
             let i = loaded.length
             while (i--) {
-              retrieve.set(loaded[i].path, loaded[i].val, loaded[i].stamp)
+              retrieve.get(loaded[i].path, loaded[i].val, loaded[i].stamp)
             }
           })
           .catch(error => {
@@ -134,6 +135,7 @@ export default struct => {
 
           if (
             fromRedis ||
+            t.val === void 0 ||
             !p ||
             ~p.keyBlacklist.indexOf(t.key) ||
             t.parent(p => p.key === 'clients')

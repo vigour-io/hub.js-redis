@@ -79,7 +79,20 @@ test('load from redis', t => {
 
   dataHub.get('redis')
     .load(false)
-    .then(() => {
+    .then((loaded) => {
+      loaded.forEach(v => {
+        dataHub.get(v.path, v.val, v.stamp)
+      })
+
+      t.deepEqual(dataHub.serialize(), {
+        redis: { connected: true },
+        someData: { to: 'test' },
+        someOther: 'data',
+        andAnother: { pathOne: 2, pathTwo: 1 }
+      }, 'loaded correct data from redis')
+
+      client.set(null)
+      dataHub.set(null)
       t.end()
     })
 })
