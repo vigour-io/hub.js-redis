@@ -8,7 +8,7 @@ export default struct => {
     redis: {
       props: {
         bucket: true,
-        url: (struct, url) => {
+        url (struct, url) {
           const client = redis.createClient({ url })
           struct.set({ client })
           client.on('error', error => struct.get('root').emit('error', error))
@@ -21,7 +21,7 @@ export default struct => {
       keyBlacklist: [],
       connected: false,
       define: {
-        save: ({ context, path, stamp, val }) => {
+        save ({ context, path, stamp, val }) {
           const p = this
 
           p.get('connected')
@@ -63,7 +63,7 @@ export default struct => {
               }
             })
         },
-        load: context => {
+        load (context) {
           context = context || false
 
           const p = this
@@ -143,7 +143,7 @@ export default struct => {
           }
 
           const context = t.root(true).contextKey || false
-          const path = JSON.stringify(t.path())
+          const path = t.path()
 
           if (typeof t.val === 'object' && t.val.inherits) {
             val = t.val.path()
