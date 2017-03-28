@@ -11,8 +11,10 @@ export default struct => {
           client.on('error', error => struct.get('root').emit('error', error))
           client.on('connect', () => struct.set({ connected: true }))
         },
+        keyBlacklist: true,
         client: true
       },
+      keyBlacklist: [],
       connected: false,
       define: {
         load: (context, path) => {
@@ -40,7 +42,13 @@ export default struct => {
     on: {
       data: {
         redis (val, stamp, t) {
+          const p = t.get(['root', 'redis'])
 
+          const parsed = bstamp.parse(stamp)
+
+          if (parsed.type === 'db' || !p || ~p.keyBlacklist.indexOf(t.key)) {
+            return
+          }
         }
       }
     }
