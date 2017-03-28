@@ -5,4 +5,4 @@
 [![npm version](https://badge.fury.io/js/hub.js-redis.svg)](https://badge.fury.io/js/hub.js-redis)
 [![Coverage Status](https://coveralls.io/repos/github/vigour-io/hub.js-redis/badge.svg?branch=master)](https://coveralls.io/github/vigour-io/hub.js-redis?branch=master)
 
-Redis backup support for hub.js
+Redis persistence layer for hub.js
