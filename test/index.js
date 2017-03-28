@@ -8,7 +8,7 @@ test('cleanup the bucket', t => {
   })
 
   client.on('connect', () => {
-    client.del('testBucket', () => {
+    client.del(['testBucket|false', 'testBucket|false|timeline'], () => {
       t.pass('bucket deleted')
       client.quit(() => {
         t.end()
@@ -60,5 +60,26 @@ test('connection', t => {
 })
 
 test('load from redis', t => {
-  t.end()
+  const dataHub = hub({
+    port: 9595,
+    inject: require('../')
+  })
+
+  const client = hub({
+    url: 'ws://localhost:9595',
+    context: false
+  })
+
+  dataHub.set({
+    redis: {
+      bucket: 'testBucket',
+      url: process.env.COMPOSE_REDIS_URL
+    }
+  })
+
+  dataHub.get('redis')
+    .load(false)
+    .then(() => {
+      t.end()
+    })
 })

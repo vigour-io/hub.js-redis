@@ -53,7 +53,7 @@ export default struct => {
                 path.unshift(stamp)
 
                 client.hset(
-                  `${bucket}|${context}|timeline`, JSON.stringify(path), val,
+                  `${bucket}|${context}|timeline`, JSON.stringify(path), JSON.stringify(val),
                   error => {
                     if (error) {
                       p.get('root').emit('error', error)
@@ -79,9 +79,8 @@ export default struct => {
                 } else {
                   var result = []
                   for (let key in replies) {
-                    let val = JSON.parse(replies[key])
-                    val.path = JSON.parse(key)
-                    result.push(val)
+                    let [val, stamp] = JSON.parse(replies[key])
+                    result.push({ val, stamp, path: JSON.parse(key) })
                   }
                   fromRedis = true
                   resolve(result)
