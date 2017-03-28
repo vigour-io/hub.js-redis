@@ -7,6 +7,7 @@ export default struct => {
   struct.set({
     redis: {
       props: {
+        bucket: true,
         url: (struct, url) => {
           const client = redis.createClient({ url })
           struct.set({ client })
@@ -16,9 +17,33 @@ export default struct => {
         keyBlacklist: true,
         client: true
       },
+      bucket: struct.get(['root', 'id']),
       keyBlacklist: [],
       connected: false,
       define: {
+        save: ({ context, path, stamp, val }) => {
+          const p = this
+
+          p.get('connected')
+            .once(true)
+            .then(() => {
+              const client = p.get('client')
+              const bucket = p.get('bucket') || p.get(['root', 'id'])
+
+              if (val === null) {
+                client.hdel(
+                  bucket + '|' + context, JSON.stringify(path),
+                  error => {
+                    if (error) {
+                      p.get('root').emit('error', error)
+                    }
+                  }
+                )
+              } else {
+
+              }
+            })
+        },
         load: (context, path) => {
           context = context || false
           path = path || []
@@ -40,24 +65,33 @@ export default struct => {
       }
     }
   })
+
+  // This is a deep listener
+  // to save every change to redis
   struct.inherits.set({
     on: {
       data: {
         redis (val, stamp, t) {
           const p = t.get(['root', 'redis'])
 
-          if (!fromRedis || !p || ~p.keyBlacklist.indexOf(t.key)) {
+          if (
+            fromRedis ||
+            !p ||
+            ~p.keyBlacklist.indexOf(t.key) ||
+            t.parent(p => p.key === 'clients')
+          ) {
             return
           }
 
           const context = t.root(true).contextKey || false
+          const path = JSON.stringify(t.path())
 
-          if (val === null) {
-
-          } else if (typeof t.val === 'object' && t.val.inherits) {
-
-          } else {
+          if (typeof t.val === 'object' && t.val.inherits) {
             val = t.val.path()
+            val.unshift('@', 'root')
+            p.save({ context, path, stamp: t.stamp, val })
+          } else {
+            p.save({ context, path, stamp: t.stamp, val: t.val })
           }
         }
       }
