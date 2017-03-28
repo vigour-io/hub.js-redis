@@ -32,7 +32,7 @@ export default struct => {
 
               if (val === null) {
                 client.hdel(
-                  bucket + '|' + context, JSON.stringify(path),
+                  `${bucket}|${context}`, JSON.stringify(path),
                   error => {
                     if (error) {
                       p.get('root').emit('error', error)
@@ -40,7 +40,26 @@ export default struct => {
                   }
                 )
               } else {
+                client.hset(
+                  `${bucket}|${context}`, JSON.stringify(path), JSON.stringify([val, stamp]),
+                  error => {
+                    if (error) {
+                      p.get('root').emit('error', error)
+                    }
+                  }
+                )
 
+                // From here on it's timeline feature
+                path.unshift(stamp)
+
+                client.hset(
+                  `${bucket}|${context}|timeline`, JSON.stringify(path), val,
+                  error => {
+                    if (error) {
+                      p.get('root').emit('error', error)
+                    }
+                  }
+                )
               }
             })
         },
