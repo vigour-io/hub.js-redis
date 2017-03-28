@@ -10,7 +10,9 @@ test('cleanup the bucket', t => {
   client.on('connect', () => {
     client.del('testBucket', () => {
       t.pass('bucket deleted')
-      t.end()
+      client.quit(() => {
+        t.end()
+      })
     })
   })
 })
