@@ -63,9 +63,32 @@ export default struct => {
               }
             })
         },
-        load: (context, path) => {
+        load: context => {
           context = context || false
-          path = path || []
+
+          const p = this
+          const client = p.get('client')
+          const bucket = p.get('bucket') || p.get(['root', 'id'])
+
+          return p.get('connected')
+            .once(true)
+            .then(() => new Promise((resolve, reject) => {
+              client.hgetall(`${bucket}|${context}`, (error, replies) => {
+                if (error) {
+                  reject(error)
+                } else {
+                  var result = []
+                  for (let key in replies) {
+                    let val = JSON.parse(replies[key])
+                    val.path = JSON.parse(key)
+                    result.push(val)
+                  }
+                  fromRedis = true
+                  resolve(result)
+                  setTimeout(() => { fromRedis = false })
+                }
+              })
+            }))
         }
       },
       on: {
@@ -82,6 +105,23 @@ export default struct => {
           }
         }
       }
+    },
+    getContext (key, context, isNew, hub) {
+      const retrieve = context(key)
+      if (isNew) {
+        hub.get('redis')
+          .load(key)
+          .then(loaded => {
+            let i = loaded.length
+            while (i--) {
+              retrieve.set(loaded[i].path, loaded[i].val, loaded[i].stamp)
+            }
+          })
+          .catch(error => {
+            hub.emit('error', error)
+          })
+      }
+      return retrieve
     }
   })
 
