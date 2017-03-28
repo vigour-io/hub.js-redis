@@ -1,5 +1,7 @@
 import redis from 'redis'
-import bstamp from 'stamp'
+
+// in order to avoid short-circuit
+var fromRedis = false
 
 export default struct => {
   struct.set({
@@ -44,10 +46,18 @@ export default struct => {
         redis (val, stamp, t) {
           const p = t.get(['root', 'redis'])
 
-          const parsed = bstamp.parse(stamp)
-
-          if (parsed.type === 'db' || !p || ~p.keyBlacklist.indexOf(t.key)) {
+          if (!fromRedis || !p || ~p.keyBlacklist.indexOf(t.key)) {
             return
+          }
+
+          const context = t.root(true).contextKey || false
+
+          if (val === null) {
+
+          } else if (typeof t.val === 'object' && t.val.inherits) {
+
+          } else {
+            val = t.val.path()
           }
         }
       }
