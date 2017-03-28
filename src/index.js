@@ -5,8 +5,11 @@ export default struct => {
   struct.set({
     redis: {
       props: {
-        url: (s, u) => {
-          s.set({ client: redis.createClient({ url: u }) })
+        url: (struct, url) => {
+          const client = redis.createClient({ url })
+          struct.set({ client })
+          client.on('error', error => struct.get('root').emit('error', error))
+          client.on('connect', () => struct.set({ connected: true }))
         },
         client: true
       },
