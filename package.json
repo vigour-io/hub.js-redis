@@ -1,6 +1,6 @@
 {
   "name": "hub.js-redis",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "dist/index.js",
   "scripts": {
     "build": "builder-boy src/index.js dist/index.js -r -t node -t browser",
