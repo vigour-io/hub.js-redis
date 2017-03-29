@@ -38,7 +38,8 @@ test('connection', t => {
   client.set({
     someData: { to: 'test' },
     someOther: 'data',
-    andAnother: { pathOne: 2, pathTwo: 1 }
+    andAnother: { pathOne: 2, pathTwo: 1 },
+    refData: { pathRef: ['@', 'root', 'someOther'] }
   })
 
   dataHub.get(['redis', 'connected'])
@@ -83,11 +84,18 @@ test('load from redis', t => {
         dataHub.get(v.path, v.val, v.stamp)
       })
 
+      t.equals(
+        dataHub.get(['refData', 'pathRef', 'compute']),
+        'data',
+        'reference is restored well'
+      )
+
       t.deepEqual(dataHub.serialize(), {
         redis: { connected: true },
         someData: { to: 'test' },
         someOther: 'data',
-        andAnother: { pathOne: 2, pathTwo: 1 }
+        andAnother: { pathOne: 2, pathTwo: 1 },
+        refData: { pathRef: ['@', 'root', 'someOther'] }
       }, 'loaded correct data from redis')
 
       client.set(null)
@@ -166,7 +174,8 @@ test('load again from redis', t => {
       t.deepEqual(dataHub.serialize(), {
         redis: { connected: true },
         someOther: 'data',
-        andAnother: { pathOne: 2, pathTwo: 1 }
+        andAnother: { pathOne: 2, pathTwo: 1 },
+        refData: { pathRef: ['@', 'root', 'someOther'] }
       }, 'loaded correct data from redis')
 
       client.set(null)
