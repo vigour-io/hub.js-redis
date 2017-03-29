@@ -46,7 +46,7 @@ test('connection', t => {
     .then(() => {
       t.pass('dataHub is connected to redis')
 
-      return new Promise(resolve => setTimeout(resolve, 200))
+      return new Promise(resolve => setTimeout(resolve, 100))
     })
     .then(() => {
       client.set(null)
@@ -56,7 +56,6 @@ test('connection', t => {
 
       t.end()
     })
-    .catch(console.error)
 })
 
 test('load from redis', t => {
@@ -87,6 +86,85 @@ test('load from redis', t => {
       t.deepEqual(dataHub.serialize(), {
         redis: { connected: true },
         someData: { to: 'test' },
+        someOther: 'data',
+        andAnother: { pathOne: 2, pathTwo: 1 }
+      }, 'loaded correct data from redis')
+
+      client.set(null)
+      dataHub.set(null)
+      t.end()
+    })
+})
+
+test('remove from redis', t => {
+  const dataHub = hub({
+    port: 9595,
+    inject: require('../')
+  })
+
+  const client = hub({
+    url: 'ws://localhost:9595',
+    context: false
+  })
+
+  dataHub.set({
+    redis: {
+      bucket: 'testBucket',
+      url: process.env.COMPOSE_REDIS_URL
+    }
+  })
+
+  dataHub.get('redis')
+    .load(false)
+    .then((loaded) => {
+      loaded.forEach(v => {
+        dataHub.get(v.path, v.val, v.stamp)
+      })
+
+      return new Promise(resolve => client.subscribe({ someData: { val: true } }, resolve))
+    })
+    .then(() => {
+      client.get('someData').set(null)
+
+      return new Promise(resolve => setTimeout(resolve, 100))
+    })
+    .then(() => {
+      client.set(null)
+      dataHub.set(null)
+
+      t.pass('object updated in redis')
+
+      t.end()
+    })
+})
+
+test('load again from redis', t => {
+  const dataHub = hub({
+    port: 9595,
+    inject: require('../')
+  })
+
+  const client = hub({
+    url: 'ws://localhost:9595',
+    context: false
+  })
+
+  dataHub.set({
+    redis: {
+      bucket: 'testBucket',
+      url: process.env.COMPOSE_REDIS_URL
+    }
+  })
+
+  dataHub.get('redis')
+    .load(false)
+    .then((loaded) => {
+      loaded.forEach(v => {
+        dataHub.get(v.path, v.val, v.stamp)
+      })
+
+      t.deepEqual(dataHub.serialize(), {
+        redis: { connected: true },
         someOther: 'data',
         andAnother: { pathOne: 2, pathTwo: 1 }
       }, 'loaded correct data from redis')
