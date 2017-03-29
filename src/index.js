@@ -150,10 +150,9 @@ export default struct => {
           if (typeof t.val === 'object' && t.val.inherits) {
             val = t.val.path()
             val.unshift('@', 'root')
-            p.save({ context, path, stamp: t.stamp, val })
-          } else {
-            p.save({ context, path, stamp: t.stamp, val: t.val })
           }
+
+          p.save({ context, path, stamp: t.stamp, val })
         }
       }
     }
