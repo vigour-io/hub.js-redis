@@ -138,7 +138,8 @@ export default struct => {
             t.val === void 0 ||
             !p ||
             ~p.keyBlacklist.indexOf(t.key) ||
-            t.parent(p => p.key === 'clients')
+            t.parent(p => p.key === 'clients') ||
+            t.parent(p => p.key === 'redis')
           ) {
             return
           }
