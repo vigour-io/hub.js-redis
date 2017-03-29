@@ -8,9 +8,11 @@ script: npm run travis
 
 notifications:
   email: false
+
 deploy:
   - provider: npm
     email: jim@vigour.io
     api_key: ${NPM_TOKEN}
     on:
       branch: master
+      tags: true
