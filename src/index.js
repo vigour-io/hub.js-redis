@@ -78,15 +78,19 @@ export default struct => {
                 if (error) {
                   reject(error)
                 } else {
-                  var result = []
-                  for (let key in replies) {
-                    let obj = JSON.parse(replies[key])
-                    obj.path = JSON.parse(key)
-                    result.push(obj)
+                  try {
+                    var result = []
+                    for (let key in replies) {
+                      let obj = JSON.parse(replies[key])
+                      obj.path = JSON.parse(key)
+                      result.push(obj)
+                    }
+                    fromRedis = true
+                    resolve(result)
+                    setTimeout(() => { fromRedis = false })
+                  } catch (error) {
+                    reject(error)
                   }
-                  fromRedis = true
-                  resolve(result)
-                  setTimeout(() => { fromRedis = false })
                 }
               })
             }))
