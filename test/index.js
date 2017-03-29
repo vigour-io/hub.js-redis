@@ -3,7 +3,7 @@ const redis = require('redis')
 const test = require('tape')
 
 test('cleanup the bucket', t => {
-  client = redis.createClient({
+  const client = redis.createClient({
     url: process.env.COMPOSE_REDIS_URL
   })
 
