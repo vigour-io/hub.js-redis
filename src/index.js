@@ -111,22 +111,23 @@ export default struct => {
         }
       }
     },
-    getContext (key, context, isNew, hub) {
-      const retrieve = context(key)
-      if (isNew) {
-        hub.get('redis')
-          .load(key)
-          .then(loaded => {
-            let i = loaded.length
-            while (i--) {
-              retrieve.get(loaded[i].path, loaded[i].val, loaded[i].stamp)
-            }
-          })
-          .catch(error => {
-            hub.emit('error', error)
-          })
-      }
-      return retrieve
+    getContext (key, context, hub) {
+      return context(key)
+        .then(retrieve => {
+          hub.get('redis')
+            .load(key)
+            .then(loaded => {
+              let i = loaded.length
+              while (i--) {
+                retrieve.get(loaded[i].path, loaded[i].val, loaded[i].stamp)
+              }
+
+              return retrieve
+            })
+            .catch(error => {
+              hub.emit('error', error)
+            })
+        })
     }
   })
 
