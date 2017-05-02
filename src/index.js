@@ -64,7 +64,7 @@ export default struct => {
               }
             })
         },
-        load (context) {
+        load (context, retrieved) {
           context = context || false
 
           const p = this
@@ -79,15 +79,13 @@ export default struct => {
                   reject(error)
                 } else {
                   try {
-                    var result = []
+                    fromRedis = true
                     for (let key in replies) {
                       let obj = JSON.parse(replies[key])
-                      obj.path = JSON.parse(key)
-                      result.push(obj)
+                      retrieved.get(JSON.parse(key), obj.val, obj.stamp)
                     }
-                    fromRedis = true
-                    resolve(result)
                     setTimeout(() => { fromRedis = false })
+                    resolve(retrieved)
                   } catch (error) {
                     reject(error)
                   }
@@ -115,15 +113,7 @@ export default struct => {
       const retrieved = retrieve(context)
 
       hub.get('redis')
-        .load(context)
-        .then(loaded => {
-          let i = loaded.length
-          while (i--) {
-            retrieved.get(loaded[i].path, loaded[i].val, loaded[i].stamp)
-          }
-
-          return retrieved
-        })
+        .load(context, retrieved)
         .catch(error => {
           hub.emit('error', error)
         })
